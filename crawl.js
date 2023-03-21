@@ -28,28 +28,58 @@ function getUrlsFromHtml(htmlBody, baseUrl) {
     });
     return urls;
 }
+/**
+ * 
+ * @param {*} baseUrl starting url/ site home page
+ * @param {*} currentUrl page we are currently crawling
+ * @param {*} pages keeps track of all pages we have crawled
+ * @returns 
+ */
+async function crawlPage(baseUrl, currentUrl, pages) {
+    // check if currentUrl is in same domain as baseUrl
+    const baseUrlObj = new URL(baseUrl);
+    const currentUrlObj = new URL(currentUrl);
+    if (baseUrlObj.hostname !== currentUrlObj.hostname) {
+        // console.log(`Skipping ${currentUrl} because it is not in the same domain as ${baseUrl}`);
+        return pages;
+    }
 
-async function crawlPage(url) {
-    console.log(`Crawling ${url}`);
+    // check if currentUrl has already been crawled
+    const normalizedCurrentUrl = normalizeUrl(currentUrl);
+    if (pages[normalizedCurrentUrl] > 0) {
+        // console.log(`Skipping ${currentUrl} because it has already been crawled`);
+        pages[normalizedCurrentUrl]++;
+        return pages;
+    }
+
+    pages[normalizedCurrentUrl] = 1;
+
+    console.log(`Crawling ${currentUrl}`);
+
     try {
-        const resp = await fetch(url);
+        const resp = await fetch(currentUrl);
         if (resp.status >= 399) {
-            console.log(`Error in fetch with status code ${resp.status} on ${url}`);
-            return;
+            console.log(`Error in fetch with status code ${resp.status} on ${currentUrl}`);
+            return pages;
         }
 
         const contentType = resp.headers.get('content-type');
         if (!contentType || !contentType.includes('text/html')) {
-            console.log(`Not HTML, skipping ${url}`);
-            return;
+            console.log(`Not HTML, skipping ${currentUrl}`);
+            return pages;
         }
 
         const htmlBody = await resp.text();
+        const nextUrls = getUrlsFromHtml(htmlBody, baseUrl);
+        for (const nextUrl of nextUrls) {
+            pages = await crawlPage(baseUrl, nextUrl, pages);
+        }
 
-        console.log(`Got ${htmlBody}`);
     } catch (err) {
-        console.log(`Error fetching ${url}: ${err.message}`);
+        console.log(`Error fetching ${currentUrl}: ${err.message}`);
     }
+
+    return pages;
 }
 
 module.exports = {
