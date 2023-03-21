@@ -1,0 +1,23 @@
+{
+  "name": "http-web-crawler",
+  "version": "1.0.0",
+  "description": "Http web crawler with nodejs + TDD",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roc41d/http-web-crawler.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/roc41d/http-web-crawler/issues"
+  },
+  "homepage": "https://github.com/roc41d/http-web-crawler#readme",
+  "devDependencies": {
+    "jest": "^29.5.0"
+  }
+}
